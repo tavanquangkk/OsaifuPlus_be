@@ -1,4 +1,4 @@
-package org.acme
+package jp.tvq.osaifuplus
 
 import io.quarkus.test.junit.QuarkusIntegrationTest
 
