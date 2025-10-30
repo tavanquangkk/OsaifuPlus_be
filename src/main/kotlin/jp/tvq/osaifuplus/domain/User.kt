@@ -1,4 +1,4 @@
-package org.acme.domain
+package jp.tvq.osaifuplus.domain
 
 import io.quarkus.hibernate.orm.panache.kotlin.PanacheEntity
 import java.util.UUID
