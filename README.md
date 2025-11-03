@@ -1,3 +1,68 @@
+```bazaar
+    # todo
+    osaifuplus-backend/
+├── pom.xml                 # 📦 Mavenプロジェクト定義
+├── mvnw                    # Mavenラッパー (Linux/Mac)
+├── mvnw.cmd                # Mavenラッパー (Windows)
+├── .gitignore
+├── .dockerignore
+├── Dockerfile.jvm          # 🐳 Dockerfile (JVMモード)
+├── Dockerfile.native       # 🐳 Dockerfile (Nativeモード)
+│
+└── src/
+    ├── main/
+    │   ├── kotlin/
+    │   │   └── com/example/osaifuplus/   # 🔵 メインパッケージ
+    │   │       │
+    │   │       ├── data/                 # 📄【データ層】DBエンティティ
+    │   │       │   ├── User.kt
+    │   │       │   ├── Transaction.kt
+    │   │       │   └── Asset.kt
+    │   │       │
+    │   │       ├── repository/           # 🗄️【データ層】データアクセスロジック
+    │   │       │   ├── UserRepository.kt
+    │   │       │   └── TransactionRepository.kt
+    │   │       │
+    │   │       ├── service/              # 🧠【ビジネスロジック層】
+    │   │       │   ├── AuthService.kt    # (登録, ログイン, パスワードハッシュ化)
+    │   │       │   ├── TokenService.kt   # (JWTトークン生成・検証)
+    │   │       │   └── TransactionService.kt
+    │   │       │
+    │   │       ├── web/                  # 📡【API層】エンドポイント
+    │   │       │   ├── AuthResource.kt   # (/auth/register, /auth/login)
+    │   │       │   ├── TransactionResource.kt # (/api/transactions)
+    │   │       │   └── AssetResource.kt
+    │   │       │
+    │   │       ├── dto/                  # 📬【API層】データ転送オブジェクト
+    │   │       │   ├── AuthDto.kt        # (RegisterRequest, LoginRequest, AuthResponse)
+    │   │       │   └── TransactionDto.kt
+    │   │       │
+    │   │       ├── config/               # ⚙️ アプリケーション設定
+    │   │       │   ├── SecurityConfig.kt # (CORS, JWTフィルターなど)
+    │   │       │   └── ExceptionMappers.kt # (カスタムエラーハンドリング)
+    │   │       │
+    │   │       └── util/                 # 🛠️ 共通ユーティリティ
+    │   │           └── PasswordUtil.kt   # (Bcryptなどのラッパー)
+    │   │
+    │   └── resources/
+    │       ├── application.properties    # 🔑 Quarkus設定ファイル
+    │       └── import.sql                # (開発用) 起動時の初期データ
+    │
+    └── test/
+        ├── kotlin/
+        │   └── com/example/osaifuplus/
+        │       ├── web/
+        │       │   └── AuthResourceTest.kt   # 🧪 APIの統合テスト
+        │       └── service/
+        │           └── AuthServiceTest.kt  # 🧪 ビジネスロジックの単体テスト
+        └── resources/
+            └── application-test.properties # テスト用の設定 (H2 DBなど)
+            
+            
+```
+
+
+
 # code-with-quarkus
 
 This project uses Quarkus, the Supersonic Subatomic Java Framework.
