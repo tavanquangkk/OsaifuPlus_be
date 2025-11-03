@@ -2,7 +2,7 @@ package jp.tvq.osaifuplus.dto
 
 import kotlinx.serialization.Serializable
 
-@kotlinx.serialization.Serializable
+@Serializable
 data class RegisterRequest (
     val email: String,
     val username:String,
@@ -13,10 +13,10 @@ data class LoginRequest (
     val email:String,
     val password:String
 )
-@kotlinx.serialization.Serializable
+@Serializable
 data class AuthResponse (
     val accessToken:String,
     val refreshToken:String,
     val email:String,
-    val name:String,
+    val username:String,
 )

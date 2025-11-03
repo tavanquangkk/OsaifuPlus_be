@@ -1,6 +1,7 @@
 privateKey.pkcs8.pem
 rsaPublicKey.pem
 rsaPrivateKey.pem
+application.properties
 
 
 
