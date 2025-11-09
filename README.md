@@ -61,6 +61,42 @@
             
 ```
 
+```
+# new structor
+
+🧩 Phần 1: Core OsaifuPlus (đã có hoặc đang có)
+Bảng	Mô tả	Quan hệ chính
+users	Người dùng	1 user → N transactions, N categories, N posts
+categories	Danh mục chi tiêu (ăn uống, thuê nhà,...)	1 user → N categories
+transactions	Giao dịch chi tiêu / thu nhập	N transaction → 1 category
+budgets (optional)	Giới hạn ngân sách theo tháng / danh mục	1 user → N budgets
+🌏 Phần 2: Live at Japan module (chia sẻ kiến thức sống ở Nhật)
+Bảng	Mô tả	Quan hệ chính
+posts	Bài viết chia sẻ (ví dụ: “Cách đăng ký thẻ cư trú”, “Cách mua sim”)	1 user (author) → N posts
+post_categories	Loại bài viết (Ví dụ: “Cuộc sống”, “Công việc”, “Giấy tờ”, “Thuế”, “Giao thông”…)	1 category → N posts
+comments	Bình luận cho bài viết	1 post → N comments, 1 user → N comments
+likes	Người dùng thích bài viết	1 user ↔ 1 post (quan hệ N-N)
+tags (optional)	Từ khóa để tìm kiếm nhanh (ví dụ “visa”, “thẻ cư trú”)	N-N với posts qua post_tags
+post_tags (junction)	Liên kết giữa posts và tags	-
+🔐 Phần 3: Quản trị (React Admin Dashboard)
+
+Các bảng liên quan để quản trị:
+
+Bảng	Dùng cho
+admin_users	Tài khoản quản trị
+user_reports	Báo cáo bài viết / bình luận vi phạm
+site_announcements	Thông báo quan trọng từ admin
+⚙️ Quan hệ chính (ERD mô tả ngắn gọn)
+users (1) ───< (N) transactions
+users (1) ───< (N) categories
+users (1) ───< (N) posts
+posts (1) ───< (N) comments
+posts (1) ───< (N) likes
+post_categories (1) ───< (N) posts
+posts (N) ───< (N) tags (qua post_tags)
+
+```
+
 
 
 # code-with-quarkus
