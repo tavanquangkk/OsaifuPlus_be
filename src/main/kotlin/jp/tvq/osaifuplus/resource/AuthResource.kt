@@ -1,7 +1,9 @@
 package jp.tvq.osaifuplus.resource
 
+import io.quarkus.security.UnauthorizedException
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.inject.Inject
+import jakarta.transaction.Transactional
 import jakarta.ws.rs.Consumes
 import jakarta.ws.rs.POST
 import jakarta.ws.rs.Path
@@ -11,8 +13,13 @@ import jakarta.ws.rs.core.MediaType
 import jakarta.ws.rs.core.Response
 import jp.tvq.osaifuplus.dto.AuthResponse
 import jp.tvq.osaifuplus.dto.LoginRequest
+import jp.tvq.osaifuplus.dto.RefreshRequest
+import jp.tvq.osaifuplus.dto.RefreshResponse
 import jp.tvq.osaifuplus.dto.RegisterRequest
-import jp.tvq.osaifuplus.service.AuthService
+import jp.tvq.osaifuplus.service.auth.AuthService
+import jp.tvq.osaifuplus.service.jwt.JwtValidator
+import jp.tvq.osaifuplus.service.jwt.TokenService
+import jp.tvq.osaifuplus.service.user.UserService
 import jp.tvq.osaifuplus.utils.ApiResponseAuth
 import jp.tvq.osaifuplus.utils.ApiResponseString
 
@@ -24,6 +31,9 @@ class AuthResource {
 
     @Inject
     lateinit var authService: AuthService
+    @Inject
+    lateinit var userService: UserService
+    @Inject lateinit var jwtValidator: JwtValidator
 
     @POST
     @Path("/register")
@@ -44,6 +54,7 @@ class AuthResource {
 
     @POST
     @Path("/login")
+    @Transactional
     fun login(loginRequest: LoginRequest): Response {
         return try {
             val authResponse = authService.login(loginRequest)
@@ -57,5 +68,31 @@ class AuthResource {
             Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(errorResponse).build()
         }
     }
+
+    @POST
+    @Path("/logout")
+    fun logout(): Response{
+
+
+        return Response.ok(ApiResponseAuth("success","ログアウトしました")).build()
+    }
+
+
+    @POST
+    @Path("/refresh")
+    @Transactional
+    fun refreshToken(request: RefreshRequest): Response {
+        return try {
+            val resData = authService.refreshToken(request)
+            Response.ok(ApiResponseAuth("success","新しいトークンが発行されました", resData)).build()
+        } catch (e: UnauthorizedException) {
+            Response.status(Response.Status.UNAUTHORIZED)
+                .entity(ApiResponseAuth("error", e.message ?: "リフレッシュトークンが無効です", null)).build()
+        } catch (e: Exception) {
+            Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                .entity(ApiResponseAuth("error", e.message ?: "不明なエラー", null)).build()
+        }
+    }
+
 }
 

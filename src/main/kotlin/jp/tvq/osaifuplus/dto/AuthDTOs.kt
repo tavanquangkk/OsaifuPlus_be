@@ -20,3 +20,13 @@ data class AuthResponse (
     val email:String,
     val username:String,
 )
+
+@Serializable
+data class RefreshRequest (
+    val refreshToken:String,
+)
+@Serializable
+data class RefreshResponse (
+    val accessToken:String,
+    val refreshToken:String,
+)

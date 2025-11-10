@@ -1,4 +1,5 @@
 package jp.tvq.osaifuplus.domain
+import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
@@ -18,5 +19,7 @@ class User {
     lateinit var username:String
     lateinit var password: String
      var role:String? = "USER"
+    @Column(name = "refreshToken",  columnDefinition = "text")
+    var refreshToken:String? = ""
 }
 
