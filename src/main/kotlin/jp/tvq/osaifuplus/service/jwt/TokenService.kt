@@ -1,17 +1,12 @@
-package jp.tvq.osaifuplus.service
+package jp.tvq.osaifuplus.service.jwt
 
 import io.smallrye.jwt.build.Jwt
-import io.smallrye.jwt.build.Jwt.claim
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.inject.Inject
 import jp.tvq.osaifuplus.domain.User
 import org.eclipse.microprofile.config.inject.ConfigProperty
-import org.eclipse.microprofile.jwt.Claims
 import org.eclipse.microprofile.jwt.JsonWebToken
-import java.time.Duration
 import java.time.Instant
-import java.util.Date
-
 
 @ApplicationScoped
 class TokenService {

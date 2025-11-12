@@ -13,4 +13,8 @@ class UserRepository : PanacheRepository<User>{
     fun existsByEmail(email:String): Boolean{
         return count("email",email) > 0
     }
+
+    fun findByRefreshToken(refreshToken: String): User? {
+        return find("refreshToken",refreshToken).firstResult()
+    }
 }

@@ -1,6 +1,5 @@
 package jp.tvq.osaifuplus.resource
 
-import io.quarkus.security.Authenticated
 import io.quarkus.security.UnauthorizedException
 import jakarta.enterprise.context.ApplicationScoped
 import jakarta.inject.Inject
