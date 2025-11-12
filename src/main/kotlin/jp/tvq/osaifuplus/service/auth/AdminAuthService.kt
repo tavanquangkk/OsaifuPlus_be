@@ -1,12 +1,10 @@
 package jp.tvq.osaifuplus.service.auth
 
 import io.quarkus.security.UnauthorizedException
-import jakarta.enterprise.context.ApplicationScoped
 import jakarta.inject.Inject
 import jakarta.transaction.Transactional
 import jakarta.ws.rs.WebApplicationException
 import jakarta.ws.rs.core.Response
-import jakarta.ws.rs.core.SecurityContext
 import jp.tvq.osaifuplus.domain.User
 import jp.tvq.osaifuplus.dto.AuthResponse
 import jp.tvq.osaifuplus.dto.LoginRequest
@@ -17,8 +15,8 @@ import jp.tvq.osaifuplus.service.PasswordUtil
 import jp.tvq.osaifuplus.service.jwt.JwtValidator
 import jp.tvq.osaifuplus.service.jwt.TokenService
 
-@ApplicationScoped
-class AuthService {
+
+class AdminAuthService {
 
     @Inject
     lateinit var userRepository: UserRepository
@@ -61,27 +59,27 @@ class AuthService {
     // Login
 
     fun login(request: LoginRequest): AuthResponse {
-                // check user exist
-               val currentUser = userRepository.findByEmail(request.email) ?: throw WebApplicationException(
-                   "メールアドレスもしくはパスワードが正しくありません",
-                   Response.Status.UNAUTHORIZED
-               )
+        // check user exist
+        val currentUser = userRepository.findByEmail(request.email) ?: throw WebApplicationException(
+            "メールアドレスもしくはパスワードが正しくありません",
+            Response.Status.UNAUTHORIZED
+        )
 
-                // 2. パスワードを照合
-                if (!passwordUtil.checkPassword(request.password, currentUser.password)) {
-                    throw WebApplicationException(
-                        "メールアドレスまたはパスワードが正しくありません",
-                        Response.Status.UNAUTHORIZED
-                    )
-                }
-                // Generate JWT
-                val accessToken = tokenService.generateAccessToken(currentUser)
-                val refreshAccessToken = tokenService.generateRefreshAccessToken(currentUser)
-                currentUser.refreshToken=refreshAccessToken
-                userRepository.persist(currentUser)
-                return AuthResponse(
-                    accessToken, refreshAccessToken, currentUser.email, currentUser.username
-                )
+        // 2. パスワードを照合
+        if (!passwordUtil.checkPassword(request.password, currentUser.password)) {
+            throw WebApplicationException(
+                "メールアドレスまたはパスワードが正しくありません",
+                Response.Status.UNAUTHORIZED
+            )
+        }
+        // Generate JWT
+        val accessToken = tokenService.generateAccessToken(currentUser)
+        val refreshAccessToken = tokenService.generateRefreshAccessToken(currentUser)
+        currentUser.refreshToken=refreshAccessToken
+        userRepository.persist(currentUser)
+        return AuthResponse(
+            accessToken, refreshAccessToken, currentUser.email, currentUser.username
+        )
 
 
     }
@@ -117,10 +115,4 @@ class AuthService {
         user.refreshToken = null
         userRepository.persist(user)
     }
-
-
-
-
-
-
 }
