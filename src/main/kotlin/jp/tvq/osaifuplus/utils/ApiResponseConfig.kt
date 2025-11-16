@@ -2,6 +2,7 @@ package jp.tvq.osaifuplus.utils
 
 import kotlinx.serialization.Serializable
 import jp.tvq.osaifuplus.dto.AuthResponse
+import jp.tvq.osaifuplus.dto.UserInfor
 
 // ジェネリック型のままだとシリアライゼーションで問題が発生するため
 // 具体的な型のレスポンスクラスを定義
@@ -19,3 +20,11 @@ data class ApiResponseAuth(
     val message: String,
     val data: AuthResponse? = null
 )
+
+@Serializable
+data class ApiResponseUserInfo(
+    val status: String,
+    val message: String,
+    val data: UserInfor? = null
+)
+

@@ -182,6 +182,7 @@
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <version>${surefire-plugin.version}</version>
             </plugin>
+
         </plugins>
     </build>
 </project>

@@ -1,6 +1,8 @@
 package jp.tvq.osaifuplus.service.auth
 
+
 import io.quarkus.security.UnauthorizedException
+import jakarta.enterprise.context.ApplicationScoped
 import jakarta.inject.Inject
 import jakarta.transaction.Transactional
 import jakarta.ws.rs.WebApplicationException
@@ -8,14 +10,12 @@ import jakarta.ws.rs.core.Response
 import jp.tvq.osaifuplus.domain.User
 import jp.tvq.osaifuplus.dto.AuthResponse
 import jp.tvq.osaifuplus.dto.LoginRequest
-import jp.tvq.osaifuplus.dto.RefreshRequest
-import jp.tvq.osaifuplus.dto.RegisterRequest
 import jp.tvq.osaifuplus.repository.UserRepository
 import jp.tvq.osaifuplus.service.PasswordUtil
 import jp.tvq.osaifuplus.service.jwt.JwtValidator
 import jp.tvq.osaifuplus.service.jwt.TokenService
 
-
+@ApplicationScoped
 class AdminAuthService {
 
     @Inject
@@ -30,89 +30,76 @@ class AdminAuthService {
     @Inject
     lateinit var jwtValidator: JwtValidator
 
-
-
-    // Register
-    @Transactional
-    fun register(request: RegisterRequest): AuthResponse {
-        if(userRepository.existsByEmail(request.email)){
-            throw WebApplicationException("このメールアドレスは既に使用されています", Response.Status.CONFLICT)
-        }
-        val passwordHash = passwordUtil.hassPassword(request.password)
-        val newUser = User().apply {
-            this.email = request.email
-            this.username = request.username
-            this.password = passwordHash
-        }
-        userRepository.persist(newUser)
-        // データベースとメモリを同期し、ID (user_id) を取得
-        userRepository.flush()
-        // Generate JWT
-        val accessToken = tokenService.generateAccessToken(user = newUser)
-        val refreshAccessToken = tokenService.generateRefreshAccessToken(newUser)
-        newUser.refreshToken = refreshAccessToken
-        return AuthResponse(
-            accessToken, refreshAccessToken, newUser.email, newUser.username
-        )
-    }
-
     // Login
-
+    @Transactional
     fun login(request: LoginRequest): AuthResponse {
-        // check user exist
-        val currentUser = userRepository.findByEmail(request.email) ?: throw WebApplicationException(
-            "メールアドレスもしくはパスワードが正しくありません",
-            Response.Status.UNAUTHORIZED
-        )
+        val user = userRepository.findByEmail(request.email)
+            ?: throw WebApplicationException(
+                "メールアドレスまたはパスワードが違います",
+                Response.Status.UNAUTHORIZED
+            )
 
-        // 2. パスワードを照合
-        if (!passwordUtil.checkPassword(request.password, currentUser.password)) {
+        if (!passwordUtil.checkPassword(request.password, user.password)) {
             throw WebApplicationException(
-                "メールアドレスまたはパスワードが正しくありません",
+                "メールアドレスまたはパスワードが違います",
                 Response.Status.UNAUTHORIZED
             )
         }
-        // Generate JWT
-        val accessToken = tokenService.generateAccessToken(currentUser)
-        val refreshAccessToken = tokenService.generateRefreshAccessToken(currentUser)
-        currentUser.refreshToken=refreshAccessToken
-        userRepository.persist(currentUser)
-        return AuthResponse(
-            accessToken, refreshAccessToken, currentUser.email, currentUser.username
-        )
 
+        if (user.role != "ADMIN") {
+            throw WebApplicationException(
+                "管理者権限がありません",
+                Response.Status.FORBIDDEN
+            )
+        }
 
-    }
-
-    //refreshToken
-    @Transactional
-    fun refreshToken(request: RefreshRequest): AuthResponse {
-        val jwt = jwtValidator.validateToken(request.refreshToken)
-            ?: throw UnauthorizedException("無効なトークン")
-
-        val user = userRepository.findByRefreshToken(request.refreshToken)
-            ?: throw UnauthorizedException("トークンが無効です")
-
-        val newAccessToken = tokenService.generateAccessToken(user)
-        val newRefreshToken = tokenService.generateRefreshAccessToken(user)
-
-        // refreshToken 更新
-        user.refreshToken = newRefreshToken
+        val accessToken = tokenService.generateAccessToken(user)
+        val refreshToken = tokenService.generateRefreshAccessToken(user)
+        user.refreshToken = refreshToken
         userRepository.persist(user)
-        userRepository.flush() // DB への反映を確実に
 
-        return AuthResponse(newAccessToken, newRefreshToken, user.email, user.username)
+        return AuthResponse(accessToken, refreshToken, user.email, user.username)
     }
 
-    //logout
-    fun logout(refreshToken: String) {
-        jwtValidator.validateToken(refreshToken)
-            ?: throw UnauthorizedException("無効なリフレッシュトークン")
+    // Refresh Token
+    @Transactional
+    fun refreshToken(refreshToken: String?): AuthResponse {
+        if (refreshToken.isNullOrBlank()) {
+            throw UnauthorizedException("Refresh token がありません")
+        }
 
         val user = userRepository.findByRefreshToken(refreshToken)
-            ?: throw UnauthorizedException("無効なリフレッシュトークン")
+            ?: throw UnauthorizedException("無効な refresh token")
+
+        if (user.role != "ADMIN") {
+            throw UnauthorizedException("管理者権限がありません")
+        }
+
+        val newAccessToken = tokenService.generateAccessToken(user)
+
+        return AuthResponse(newAccessToken, null, user.email, user.username)
+    }
+
+    // Logout
+    @Transactional
+    fun logout(refreshToken: String?) {
+        if (refreshToken.isNullOrBlank()) {
+            throw UnauthorizedException("Refresh token がありません")
+        }
+
+        val user = userRepository.findByRefreshToken(refreshToken)
+            ?: throw UnauthorizedException("無効な refresh token")
+
+        if (user.role != "ADMIN") {
+            throw UnauthorizedException("管理者権限がありません")
+        }
 
         user.refreshToken = null
         userRepository.persist(user)
     }
+    // get User by refreshToken
+    fun findByRefreshToken(refreshToken: String): User? {
+        return userRepository.find("refreshToken", refreshToken).firstResult()
+    }
 }
+

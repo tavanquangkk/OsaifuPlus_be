@@ -15,10 +15,10 @@ data class LoginRequest (
 )
 @Serializable
 data class AuthResponse (
-    val accessToken:String,
-    val refreshToken:String,
-    val email:String,
-    val username:String,
+    val accessToken:String?,
+    val refreshToken:String?,
+    val email:String?,
+    val username:String?,
 )
 
 @Serializable
@@ -29,4 +29,9 @@ data class RefreshRequest (
 data class RefreshResponse (
     val accessToken:String,
     val refreshToken:String,
+)
+
+@Serializable
+data class AdminRefreshTokenResponse(
+    val accessToken: String
 )
