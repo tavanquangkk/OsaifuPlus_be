@@ -5,14 +5,12 @@ import jakarta.persistence.GeneratedValue
 import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.Table
-
-
-
+import kotlinx.serialization.Serializable
 
 
 @Entity
 @Table(name = "users")
-class User {
+open class User {
    @Id @GeneratedValue(strategy = GenerationType.UUID)
     lateinit var user_id:String
     lateinit var email: String

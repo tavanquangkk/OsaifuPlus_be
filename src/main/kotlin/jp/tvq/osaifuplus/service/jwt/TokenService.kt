@@ -23,9 +23,10 @@ class TokenService {
             .issuer(issuer)
             .subject(user.user_id.toString())
             .upn(user.email.toString())
+            .claim("email",user.email)
             .groups(groups)
             .issuedAt(Instant.now())
-            .expiresAt(Instant.now().plusSeconds(15))
+            .expiresAt(Instant.now().plusSeconds(15000))
             .sign()
 
     }
@@ -35,6 +36,7 @@ class TokenService {
             .issuer(issuer)
             .subject(user.user_id.toString())
             .upn(user.email.toString())
+            .claim("email",user.email)
             .groups(groups)
             .issuedAt(Instant.now())
             .expiresAt(Instant.now().plusSeconds(43200))  //30days
