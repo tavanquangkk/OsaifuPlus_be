@@ -51,16 +51,16 @@ class AdminAuthResource {
         return try {
 
             val authResponse = adminAuthService.login(loginRequest)
-            val cookie = NewCookie(
-                "refreshToken",
-                authResponse.refreshToken,
-                "/",
-                null,
-                "Refresh Token",
-                60 * 60 * 24 * 30,
-                true,
-                true
-            )
+            val cookie = NewCookie.Builder("refreshToken")
+                .value(authResponse.refreshToken)
+                .path("/")
+                .comment("Refresh Token")
+                .maxAge(60 * 60 * 24 * 30)  // 30 ngày
+                .secure(true)               // Chỉ gửi qua HTTPS
+                .httpOnly(true)             // Không cho JS đọc token
+                .sameSite(NewCookie.SameSite.NONE)  // nếu dùng cross-site (React FE / Quarkus BE)
+                .build()
+
             val successResponse = ApiResponseAuth("success", "ログインに成功しました", authResponse)
             Response.ok(successResponse).cookie(cookie).build()
         } catch (e: WebApplicationException) {
