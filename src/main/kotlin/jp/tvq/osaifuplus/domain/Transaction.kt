@@ -10,7 +10,7 @@ class Transaction(
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    var id: String? = "",
+    var id: UUID? = null,
 
     @Column(nullable = false)
     var userId: UUID? = null,

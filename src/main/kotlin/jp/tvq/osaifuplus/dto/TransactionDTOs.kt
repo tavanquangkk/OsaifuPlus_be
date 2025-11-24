@@ -25,3 +25,15 @@ data class TransactionResponse(
     @Contextual
     var created_at:  String?
 )
+
+@Serializable
+data class MonthlyAmount(
+    val month:String,
+    val amount: Long
+)
+
+@Serializable
+data class  MonthlySeparatedSummary(
+    val income : List<MonthlyAmount>,
+    val expense : List<MonthlyAmount>,
+)
