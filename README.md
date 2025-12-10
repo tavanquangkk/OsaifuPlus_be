@@ -1,182 +1,482 @@
-```bazaar
-    # todo
-    osaifuplus-backend/
-├── pom.xml                 # 📦 Mavenプロジェクト定義
-├── mvnw                    # Mavenラッパー (Linux/Mac)
-├── mvnw.cmd                # Mavenラッパー (Windows)
-├── .gitignore
-├── .dockerignore
-├── Dockerfile.jvm          # 🐳 Dockerfile (JVMモード)
-├── Dockerfile.native       # 🐳 Dockerfile (Nativeモード)
+# OsaifuPlus Backend 💰
+
+<div align="center">
+
+**日本での生活を支援する個人財務管理プラットフォームのバックエンドAPI**
+
+[![Quarkus](https://img.shields.io/badge/Quarkus-3.29.0-blue)](https://quarkus.io/)
+[![Kotlin](https://img.shields.io/badge/Kotlin-2.2.20-purple)](https://kotlinlang.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-blue)](https://www.postgresql.org/)
+[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+
+</div>
+
+---
+
+## 📖 概要
+
+OsaifuPlus Backendは、日本在住者向けの個人財務管理および生活情報共有プラットフォーム「OsaifuPlus」のサーバーサイドアプリケーションです。
+
+### 主な機能
+
+🔐 **認証・認可**
+- JWT（JSON Web Token）ベースの認証システム
+- ユーザー登録・ログイン
+- 管理者認証機能
+
+💰 **財務管理**
+- 収入・支出の取引記録
+- カテゴリ別の支出分析
+- 月次レポート生成
+
+👥 **ユーザー管理**
+- プロフィール管理
+- アカウント設定
+
+🌏 **Live at Japan モジュール**（開発予定）
+- 日本での生活情報共有
+- コミュニティ投稿機能
+- コメント・いいね機能
+
+---
+
+## 🛠 技術スタック
+
+| カテゴリ | 技術 |
+|---------|------|
+| **フレームワーク** | Quarkus 3.29.0 (Supersonic Subatomic Java Framework) |
+| **言語** | Kotlin 2.2.20 |
+| **データベース** | PostgreSQL 17 |
+| **ORM** | Hibernate ORM with Panache |
+| **認証** | SmallRye JWT (RSA署名) |
+| **セキュリティ** | Bcrypt パスワードハッシュ化 |
+| **シリアライゼーション** | Kotlinx Serialization |
+| **ビルドツール** | Maven 3.8+ |
+
+---
+
+## 📁 プロジェクト構造
+
+```
+OsaifuPlus_be/
+├── src/
+│   ├── main/
+│   │   ├── kotlin/jp/tvq/osaifuplus/
+│   │   │   ├── domain/              # 📄 エンティティ層
+│   │   │   │   ├── User.kt
+│   │   │   │   └── Transaction.kt
+│   │   │   │
+│   │   │   ├── repository/          # 🗄️ データアクセス層
+│   │   │   │   └── UserRepository.kt
+│   │   │   │
+│   │   │   ├── service/             # 🧠 ビジネスロジック層
+│   │   │   │   ├── auth/            # 認証サービス
+│   │   │   │   ├── jwt/             # JWT トークンサービス
+│   │   │   │   ├── transaction/     # 取引サービス
+│   │   │   │   └── user/            # ユーザーサービス
+│   │   │   │
+│   │   │   ├── resource/            # 📡 REST API エンドポイント
+│   │   │   │   ├── AuthResource.kt
+│   │   │   │   ├── AdminAuthResource.kt
+│   │   │   │   ├── TransactionResource.kt
+│   │   │   │   └── UserResource.kt
+│   │   │   │
+│   │   │   ├── dto/                 # 📬 データ転送オブジェクト
+│   │   │   │   └── AuthDTOs.kt
+│   │   │   │
+│   │   │   └── utils/               # 🛠️ ユーティリティ
+│   │   │       └── ApiResponse.kt
+│   │   │
+│   │   └── resources/
+│   │       ├── application.properties
+│   │       ├── import.sql
+│   │       └── keys/                # 🔑 JWT 鍵ペア（開発用のみ）
+│   │           ├── rsaPrivateKey.pem
+│   │           └── rsaPublicKey.pem
+│   │
+│   └── test/kotlin/                 # 🧪 テストコード
 │
-└── src/
-    ├── main/
-    │   ├── kotlin/
-    │   │   └── com/example/osaifuplus/   # 🔵 メインパッケージ
-    │   │       │
-    │   │       ├── data/                 # 📄【データ層】DBエンティティ
-    │   │       │   ├── User.kt
-    │   │       │   ├── Transaction.kt
-    │   │       │   └── Asset.kt
-    │   │       │
-    │   │       ├── repository/           # 🗄️【データ層】データアクセスロジック
-    │   │       │   ├── UserRepository.kt
-    │   │       │   └── TransactionRepository.kt
-    │   │       │
-    │   │       ├── service/              # 🧠【ビジネスロジック層】
-    │   │       │   ├── AuthService.kt    # (登録, ログイン, パスワードハッシュ化)
-    │   │       │   ├── TokenService.kt   # (JWTトークン生成・検証)
-    │   │       │   └── TransactionService.kt
-    │   │       │
-    │   │       ├── web/                  # 📡【API層】エンドポイント
-    │   │       │   ├── AuthResource.kt   # (/auth/register, /auth/login)
-    │   │       │   ├── TransactionResource.kt # (/api/transactions)
-    │   │       │   └── AssetResource.kt
-    │   │       │
-    │   │       ├── dto/                  # 📬【API層】データ転送オブジェクト
-    │   │       │   ├── AuthDto.kt        # (RegisterRequest, LoginRequest, AuthResponse)
-    │   │       │   └── TransactionDto.kt
-    │   │       │
-    │   │       ├── config/               # ⚙️ アプリケーション設定
-    │   │       │   ├── SecurityConfig.kt # (CORS, JWTフィルターなど)
-    │   │       │   └── ExceptionMappers.kt # (カスタムエラーハンドリング)
-    │   │       │
-    │   │       └── util/                 # 🛠️ 共通ユーティリティ
-    │   │           └── PasswordUtil.kt   # (Bcryptなどのラッパー)
-    │   │
-    │   └── resources/
-    │       ├── application.properties    # 🔑 Quarkus設定ファイル
-    │       └── import.sql                # (開発用) 起動時の初期データ
-    │
-    └── test/
-        ├── kotlin/
-        │   └── com/example/osaifuplus/
-        │       ├── web/
-        │       │   └── AuthResourceTest.kt   # 🧪 APIの統合テスト
-        │       └── service/
-        │           └── AuthServiceTest.kt  # 🧪 ビジネスロジックの単体テスト
-        └── resources/
-            └── application-test.properties # テスト用の設定 (H2 DBなど)
-            
-            
+├── pom.xml                          # Maven設定
+├── mvnw / mvnw.cmd                  # Maven Wrapper
+├── .gitignore                       # Git除外設定（本番用鍵を保護）
+└── README.md
 ```
 
-```
-# new structor
+> ⚠️ **注意**: `keys/` ディレクトリ内のRSA鍵ペアは**開発・テスト環境専用**です。  
+> 本番環境では必ず新しい鍵ペアを生成し、秘密鍵をリポジトリにコミットしないでください。
 
-🧩 Phần 1: Core OsaifuPlus (đã có hoặc đang có)
-Bảng	Mô tả	Quan hệ chính
-users	Người dùng	1 user → N transactions, N categories, N posts
-categories	Danh mục chi tiêu (ăn uống, thuê nhà,...)	1 user → N categories
-transactions	Giao dịch chi tiêu / thu nhập	N transaction → 1 category
-budgets (optional)	Giới hạn ngân sách theo tháng / danh mục	1 user → N budgets
-🌏 Phần 2: Live at Japan module (chia sẻ kiến thức sống ở Nhật)
-Bảng	Mô tả	Quan hệ chính
-posts	Bài viết chia sẻ (ví dụ: “Cách đăng ký thẻ cư trú”, “Cách mua sim”)	1 user (author) → N posts
-post_categories	Loại bài viết (Ví dụ: “Cuộc sống”, “Công việc”, “Giấy tờ”, “Thuế”, “Giao thông”…)	1 category → N posts
-comments	Bình luận cho bài viết	1 post → N comments, 1 user → N comments
-likes	Người dùng thích bài viết	1 user ↔ 1 post (quan hệ N-N)
-tags (optional)	Từ khóa để tìm kiếm nhanh (ví dụ “visa”, “thẻ cư trú”)	N-N với posts qua post_tags
-post_tags (junction)	Liên kết giữa posts và tags	-
-🔐 Phần 3: Quản trị (React Admin Dashboard)
+---
 
-Các bảng liên quan để quản trị:
+## 🚀 セットアップ & 起動方法
 
-Bảng	Dùng cho
-admin_users	Tài khoản quản trị
-user_reports	Báo cáo bài viết / bình luận vi phạm
-site_announcements	Thông báo quan trọng từ admin
-⚙️ Quan hệ chính (ERD mô tả ngắn gọn)
-users (1) ───< (N) transactions
-users (1) ───< (N) categories
-users (1) ───< (N) posts
-posts (1) ───< (N) comments
-posts (1) ───< (N) likes
-post_categories (1) ───< (N) posts
-posts (N) ───< (N) tags (qua post_tags)
+### 前提条件
 
+以下のソフトウェアがインストールされている必要があります：
+
+- **JDK 21** 以上
+- **Maven 3.8+** (または同梱のMaven Wrapperを使用)
+- **PostgreSQL 17** (ローカル環境の場合)
+
+### 1. データベースのセットアップ
+
+PostgreSQLを起動し、データベースとユーザーを作成します：
+
+```bash
+# PostgreSQLの起動 (Homebrewの場合)
+brew services start postgresql@17
+
+# データベースとユーザーの作成
+psql -U postgres
 ```
 
+```sql
+CREATE DATABASE osaifu;
+CREATE USER osaifu WITH PASSWORD 'osaifu';
+GRANT ALL PRIVILEGES ON DATABASE osaifu TO osaifu;
+\q
+```
 
+### 2. RSA鍵ペアの生成
 
-# code-with-quarkus
+⚠️ **セキュリティ上の重要な注意事項**
 
-This project uses Quarkus, the Supersonic Subatomic Java Framework.
+このリポジトリには開発用のRSA鍵ペアが含まれていますが、**本番環境では絶対に使用しないでください**。
+本番環境では必ず新しい鍵ペアを生成し、秘密鍵をGitにコミットしないでください。
 
-If you want to learn more about Quarkus, please visit its website: <https://quarkus.io/>.
+#### macOS / Linux での鍵ペア生成
 
-## Running the application in dev mode
+```bash
+# keysディレクトリの作成
+mkdir -p src/main/resources/keys
 
-You can run your application in dev mode that enables live coding using:
+# 秘密鍵の生成（2048ビットRSA）
+openssl genrsa -out src/main/resources/keys/rsaPrivateKey.pem 2048
 
-```shell script
+# 公開鍵の抽出
+openssl rsa -in src/main/resources/keys/rsaPrivateKey.pem \
+  -pubout -out src/main/resources/keys/rsaPublicKey.pem
+
+# PKCS#8形式の秘密鍵を生成（Quarkus用）
+openssl pkcs8 -topk8 -inform PEM -outform PEM -nocrypt \
+  -in src/main/resources/keys/rsaPrivateKey.pem \
+  -out src/main/resources/keys/privateKey.pkcs8.pem
+```
+
+#### Windows (PowerShell) での鍵ペア生成
+
+OpenSSLをインストールしていない場合は、[Git for Windows](https://git-scm-downloads.com/)に含まれるOpenSSLを使用するか、[Win32 OpenSSL](https://slproweb.com/products/Win32OpenSSL.html)をインストールしてください。
+
+```powershell
+# keysディレクトリの作成
+New-Item -ItemType Directory -Force -Path src\main\resources\keys
+
+# 秘密鍵の生成
+openssl genrsa -out src\main\resources\keys\rsaPrivateKey.pem 2048
+
+# 公開鍵の抽出
+openssl rsa -in src\main\resources\keys\rsaPrivateKey.pem `
+  -pubout -out src\main\resources\keys\rsaPublicKey.pem
+
+# PKCS#8形式の秘密鍵を生成
+openssl pkcs8 -topk8 -inform PEM -outform PEM -nocrypt `
+  -in src\main\resources\keys\rsaPrivateKey.pem `
+  -out src\main\resources\keys\privateKey.pkcs8.pem
+```
+
+#### .gitignoreへの追加（推奨）
+
+本番環境用の鍵を保護するため、`.gitignore`に以下を追加してください：
+
+```gitignore
+# JWT Keys (本番環境用)
+src/main/resources/keys/*.pem
+!src/main/resources/keys/.gitkeep
+```
+
+### 3. アプリケーション設定
+
+`src/main/resources/application.properties` を確認・編集します：
+
+```properties
+# データベース設定
+quarkus.datasource.db-kind=postgresql
+quarkus.datasource.jdbc.url=jdbc:postgresql://localhost:5432/osaifu
+quarkus.datasource.username=osaifu
+quarkus.datasource.password=osaifu
+
+# Hibernate設定 (開発時は update, 本番環境では validate 推奨)
+quarkus.hibernate-orm.database.generation=update
+
+# JWT設定
+smallrye.jwt.sign.key.location=classpath:keys/rsaPrivateKey.pem
+mp.jwt.verify.publickey.location=classpath:keys/rsaPublicKey.pem
+mp.jwt.verify.issuer=https://osaifuplus.tvq.jp
+```
+
+### 4. 開発モードでの起動
+
+```bash
+# Maven Wrapperを使用（推奨）
 ./mvnw quarkus:dev
+
+# またはMavenコマンド
+mvn quarkus:dev
 ```
 
-> **_NOTE:_**  Quarkus now ships with a Dev UI, which is available in dev mode only at <http://localhost:8080/q/dev/>.
+アプリケーションは **http://localhost:8080** で起動します。
 
-## Packaging and running the application
+### 5. Dev UI の利用
 
-The application can be packaged using:
+開発モード時は、Quarkus Dev UI が利用できます：
+- **URL**: http://localhost:8080/q/dev/
+- データソース、エンドポイント、設定などを確認可能
 
-```shell script
+---
+
+## 📡 API エンドポイント
+
+### 認証 API
+
+| メソッド | エンドポイント | 説明 | 認証 |
+|---------|--------------|------|------|
+| POST | `/api/v1/auth/register` | ユーザー登録 | 不要 |
+| POST | `/api/v1/auth/login` | ログイン | 不要 |
+
+**リクエスト例 (登録)**:
+```json
+{
+  "email": "user@example.com",
+  "username": "username",
+  "password": "securePassword123"
+}
+```
+
+**レスポンス例**:
+```json
+{
+  "status": "success",
+  "message": "作成に成功しました",
+  "data": {
+    "accessToken": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "refreshToken": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "email": "user@example.com",
+    "name": "username"
+  }
+}
+```
+
+### 取引 API
+
+| メソッド | エンドポイント | 説明 | 認証 |
+|---------|--------------|------|------|
+| POST | `/api/v1/transactions` | 取引作成 | 必要 |
+| GET | `/api/v1/transactions` | 取引一覧取得 | 必要 |
+| GET | `/api/v1/transactions/{id}` | 取引詳細取得 | 必要 |
+| PUT | `/api/v1/transactions/{id}` | 取引更新 | 必要 |
+| DELETE | `/api/v1/transactions/{id}` | 取引削除 | 必要 |
+
+### ユーザー API
+
+| メソッド | エンドポイント | 説明 | 認証 |
+|---------|--------------|------|------|
+| GET | `/api/v1/users/me` | 現在のユーザー情報取得 | 必要 |
+| PUT | `/api/v1/users/me` | ユーザー情報更新 | 必要 |
+
+### 管理者 API
+
+| メソッド | エンドポイント | 説明 | 認証 |
+|---------|--------------|------|------|
+| POST | `/api/v1/admin/auth/login` | 管理者ログイン | 不要 |
+| GET | `/api/v1/admin/*` | 管理者機能 | 管理者権限必要 |
+
+---
+
+## 🔧 ビルド & デプロイ
+
+### 本番用パッケージング
+
+```bash
+# JARファイルの生成
 ./mvnw package
-```
 
-It produces the `quarkus-run.jar` file in the `target/quarkus-app/` directory.
-Be aware that it’s not an _über-jar_ as the dependencies are copied into the `target/quarkus-app/lib/` directory.
-
-The application is now runnable using `java -jar target/quarkus-app/quarkus-run.jar`.
-
-If you want to build an _über-jar_, execute the following command:
-
-```shell script
+# Uber-JARの生成（全依存関係を含む）
 ./mvnw package -Dquarkus.package.jar.type=uber-jar
+
+# 実行
+java -jar target/quarkus-app/quarkus-run.jar
 ```
 
-The application, packaged as an _über-jar_, is now runnable using `java -jar target/*-runner.jar`.
+### ネイティブイメージのビルド
 
-## Creating a native executable
-
-You can create a native executable using:
-
-```shell script
+```bash
+# GraalVMを使用してネイティブ実行可能ファイルを生成
 ./mvnw package -Dnative
-```
 
-Or, if you don't have GraalVM installed, you can run the native executable build in a container using:
-
-```shell script
+# Dockerコンテナ内でビルド（GraalVM不要）
 ./mvnw package -Dnative -Dquarkus.native.container-build=true
+
+# 実行
+./target/code-with-quarkus-1.0.0-SNAPSHOT-runner
 ```
 
-You can then execute your native executable with: `./target/code-with-quarkus-1.0.0-SNAPSHOT-runner`
+---
 
-If you want to learn more about building native executables, please consult <https://quarkus.io/guides/maven-tooling>.
+## 🧪 テスト
 
-## Related Guides
+```bash
+# 全テストの実行
+./mvnw test
 
-- REST ([guide](https://quarkus.io/guides/rest)): A Jakarta REST implementation utilizing build time processing and Vert.x. This extension is not compatible with the quarkus-resteasy extension, or any of the extensions that depend on it.
-- Hibernate ORM with Panache and Kotlin ([guide](https://quarkus.io/guides/hibernate-orm-panache-kotlin)): Define your persistent model in Hibernate ORM with Panache
-- REST Jackson ([guide](https://quarkus.io/guides/rest#json-serialisation)): Jackson serialization support for Quarkus REST. This extension is not compatible with the quarkus-resteasy extension, or any of the extensions that depend on it
-- Kotlin ([guide](https://quarkus.io/guides/kotlin)): Write your services in Kotlin
-- Hibernate ORM with Panache ([guide](https://quarkus.io/guides/hibernate-orm-panache)): Simplify your persistence code for Hibernate ORM via the active record or the repository pattern
-- JDBC Driver - PostgreSQL ([guide](https://quarkus.io/guides/datasource)): Connect to the PostgreSQL database via JDBC
+# 統合テストの実行
+./mvnw verify
+```
 
-## Provided Code
+---
 
-### Hibernate ORM
+## 🗄️ データベーススキーマ
 
-Create your first JPA entity
+### 主要テーブル
 
-[Related guide section...](https://quarkus.io/guides/hibernate-orm)
+#### `users` - ユーザー情報
+```sql
+- user_id (PK)
+- email (UNIQUE)
+- username
+- password (ハッシュ化)
+- created_at
+- updated_at
+```
 
-[Related Hibernate with Panache section...](https://quarkus.io/guides/hibernate-orm-panache)
+#### `transactions` - 取引記録
+```sql
+- transaction_id (PK)
+- user_id (FK)
+- category_id (FK)
+- amount
+- type (INCOME/EXPENSE)
+- description
+- transaction_date
+- created_at
+```
 
-[Related Hibernate with Panache in Kotlin section...](https://quarkus.io/guides/hibernate-orm-panache-kotlin)
+---
 
-### REST
+## 🔐 セキュリティ
 
-Easily start your REST Web Services
+### 認証・認可
 
-[Related guide section...](https://quarkus.io/guides/getting-started-reactive#reactive-jax-rs-resources)
+- **パスワード**: Bcryptでハッシュ化して保存
+- **認証**: JWT（RS256署名）を使用
+- **トークン有効期限**:
+  - Access Token: 60分
+  - Refresh Token: 30日間
+
+### RSA鍵の管理
+
+⚠️ **重要なセキュリティガイドライン**
+
+1. **開発環境**
+   - リポジトリに含まれる鍵ペアは開発・テスト用のみ
+   - チーム開発の場合は共有しても問題なし
+
+2. **本番環境**
+   - **必ず新しい鍵ペアを生成**してください
+   - 秘密鍵（`rsaPrivateKey.pem`）は絶対にGitにコミットしない
+   - 秘密鍵は環境変数やシークレット管理サービス（AWS Secrets Manager、Azure Key Vault等）で管理
+   - 鍵のローテーション計画を策定（推奨：3〜6ヶ月ごと）
+
+3. **推奨される本番環境の設定**
+   ```properties
+   # 環境変数から読み込む
+   smallrye.jwt.sign.key.location=${JWT_PRIVATE_KEY_PATH}
+   mp.jwt.verify.publickey.location=${JWT_PUBLIC_KEY_PATH}
+   ```
+
+4. **鍵の保護**
+   - ファイルパーミッション: `chmod 600 rsaPrivateKey.pem`（読み取り専用、所有者のみ）
+   - バックアップは暗号化して保存
+   - アクセスログの監視
+
+---
+
+## 🐳 Docker での起動
+
+```bash
+# Dockerイメージのビルド
+docker build -f src/main/docker/Dockerfile.jvm -t osaifuplus-backend:latest .
+
+# コンテナの起動
+docker run -i --rm -p 8080:8080 osaifuplus-backend:latest
+```
+
+---
+
+## 📚 参考リンク
+
+- [Quarkus Documentation](https://quarkus.io/)
+- [Kotlin Documentation](https://kotlinlang.org/docs/home.html)
+- [Hibernate ORM with Panache](https://quarkus.io/guides/hibernate-orm-panache)
+- [SmallRye JWT](https://quarkus.io/guides/security-jwt)
+
+---
+
+## 👨‍💻 開発者
+
+**Tavan Quang** - [@tavanquangkk](https://github.com/tavanquangkk)
+
+---
+
+## 📄 ライセンス
+
+This project is licensed under the MIT License.
+
+---
+
+## 🤝 貢献
+
+プルリクエストを歓迎します！大きな変更の場合は、まずissueを開いて変更内容を議論してください。
+
+---
+
+## 🔄 今後の開発予定
+
+- [ ] カテゴリ管理API
+- [ ] 月次レポート機能
+- [ ] 予算管理機能
+- [ ] Live at Japan コミュニティモジュール
+- [ ] 投稿・コメント機能
+- [ ] タグ検索機能
+- [ ] 管理者ダッシュボード
+
+---
+
+## ❓ トラブルシューティング
+
+### Q: アプリケーションが起動しない
+
+**A**: 以下を確認してください：
+- PostgreSQLが起動しているか
+- データベース接続情報が正しいか
+- JDK 21以上がインストールされているか
+- ポート8080が使用可能か
+
+### Q: JWT認証エラーが発生する
+
+**A**: 以下を確認してください：
+- RSA鍵ペアが正しく生成されているか
+- `application.properties`の鍵のパスが正しいか
+- トークンの有効期限が切れていないか
+
+### Q: データベース接続エラー
+
+**A**: 以下を確認してください：
+```bash
+# PostgreSQLの状態確認
+brew services list | grep postgresql
+
+# PostgreSQLの起動
+brew services start postgresql@17
+
+# データベースの存在確認
+psql -U postgres -c "\l"
+```
