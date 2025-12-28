@@ -1,5 +1,6 @@
     package jp.tvq.osaifuplus.resource
 
+    import io.quarkus.security.Authenticated
     import jakarta.enterprise.context.ApplicationScoped
     import jakarta.inject.Inject
     import jakarta.ws.rs.GET
@@ -14,6 +15,7 @@
 
     @ApplicationScoped
     @Path("/api/v1/users")
+    @Authenticated
     class UserResource {
 
         @Inject

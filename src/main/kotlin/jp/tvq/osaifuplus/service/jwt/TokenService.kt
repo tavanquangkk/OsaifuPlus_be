@@ -26,7 +26,7 @@ class TokenService {
             .claim("email",user.email)
             .groups(groups)
             .issuedAt(Instant.now())
-            .expiresAt(Instant.now().plusSeconds(15000))
+            .expiresAt(Instant.now().plusSeconds(3600)) //1hour
             .sign()
 
     }
